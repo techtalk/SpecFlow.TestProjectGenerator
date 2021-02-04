@@ -176,7 +176,7 @@ namespace TechTalk.SpecFlow.TestProjectGenerator.CucumberMessages
             {
                 case StepDefinitionRowExecution.Pass: return ("//pass", "'pass");
                 case StepDefinitionRowExecution.Fail: return (@"throw new global::System.Exception(""Expected failure"");", @"Throw New System.Exception(""Expected failure"")");
-                case StepDefinitionRowExecution.Pending: return (@"ScenarioContext.Current.Pending();", @"ScenarioContext.Current.Pending()");
+                case StepDefinitionRowExecution.Pending: return (@"_scenarioContext.Pending();", @"_scenarioContext.Pending()");
                 default: throw new NotSupportedException($"Not supported {nameof(StepDefinitionRowExecution)}: {execution}");
             }
         }

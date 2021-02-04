@@ -35,6 +35,30 @@ Friend Module Log
     Friend Sub LogHook(<CallerMemberName()> Optional stepName As String = Nothing)
         File.AppendAllText(LogFileLocation, $""-> hook: {{stepName}}{{Environment.NewLine}}"")
     End Sub
+    
+    Friend Shared Async Function LogHookIncludingLockingAsync(
+    <CallerMemberName> ByVal Optional stepName As String = Nothing) As Task
+        File.AppendAllText(LogFileLocation, $""->waiting for hook lock: {{stepName}}{{Environment.NewLine}}"")
+        Await WaitForLockAsync()
+        File.AppendAllText(LogFileLocation, $""-> hook: {{stepName}}{{Environment.NewLine}}"")
+    End Function
+
+    Private Shared Async Function WaitForLockAsync() As Task
+        Dim lockFile = LogFileLocation & "".lock""
+
+        While True
+
+            Try
+                Using File.Open(lockFile, FileMode.CreateNew)
+                End Using
+                Exit While
+            Catch __unusedIOException1__ As IOException
+                Await Task.Delay(1000)
+            End Try
+        End While
+
+        File.Delete(lockFile)
+    End Function
 End Module
 ";
             return new ProjectFile("Log.vb", "Compile", fileContent);
@@ -157,6 +181,50 @@ Public Class {Guid.NewGuid()}
         {code}
         Console.WriteLine(""-> hook: {name}"")
     End Sub
+End Class
+";
+        }
+
+        protected override string GetAsyncHookIncludingLockingBindingClass(string hookType, string name, string code = "", int? order = null, IList<string> hookTypeAttributeTags = null, IList<string> methodScopeAttributeTags = null,
+            IList<string> classScopeAttributeTags = null)
+        {
+            string ToScopeTags(IList<string> scopeTags) => scopeTags.Any() ? $"{scopeTags.Select(t => $@"<[Scope](Tag=""{t}"")>").JoinToString("")}_" : null;
+
+            bool isStatic = IsStaticEvent(hookType);
+
+            string hookTypeTags = hookTypeAttributeTags?.Select(t => $@"""{t}""").JoinToString(", ");
+
+            var hookAttributeConstructorProperties = new[]
+            {
+                hookTypeAttributeTags is null || !hookTypeAttributeTags.Any() ? null : $"tags:= New String() {{{hookTypeTags}}}",
+                order is null ? null : $"Order:= {order}"
+            }.Where(p => p.IsNotNullOrWhiteSpace());
+
+            string hookTypeAttributeTagsString = string.Join(", ", hookAttributeConstructorProperties);
+            string classScopeAttributes = ToScopeTags(classScopeAttributeTags);
+            string methodScopeAttributes = ToScopeTags(methodScopeAttributeTags);
+
+            string staticKeyword = isStatic ? "Static" : string.Empty;
+            return $@"
+Imports System
+Imports System.Collections
+Imports System.IO
+Imports System.Linq
+Imports System.Xml
+Imports System.Xml.Linq
+Imports TechTalk.SpecFlow
+Imports System.Threading
+Imports System.Threading.Tasks
+
+<[Binding]> _
+{classScopeAttributes}
+Public Class {Guid.NewGuid()}
+    <[{hookType}({hookTypeAttributeTagsString})]>_
+    {methodScopeAttributes}
+    Public {staticKeyword} Async Function {name}() as Task
+        {code}
+        Await Log.LogHookIncludingLockingAsync()
+    End Function
 End Class
 ";
         }

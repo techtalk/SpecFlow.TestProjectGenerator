@@ -14,7 +14,10 @@ namespace TechTalk.SpecFlow.TestProjectGenerator.Driver
 
         public Dictionary<string, string> GenerateEnvironmentVariables()
         {
-            var envVariables = new Dictionary<string, string>();
+            var envVariables = new Dictionary<string, string>
+            {
+                {"DOTNET_CLI_UI_LANGUAGE", "en"}
+            };
 
             if (_testSuiteInitializationDriver.OverrideTestSuiteStartupTime is DateTime testRunStartupTime)
             {

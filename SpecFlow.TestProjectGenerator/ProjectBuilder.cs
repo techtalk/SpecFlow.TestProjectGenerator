@@ -118,6 +118,15 @@ namespace TechTalk.SpecFlow.TestProjectGenerator
             _project.AddFile(bindingsGenerator.GenerateHookBinding(eventType, name, code, order, hookTypeAttributeTags, methodScopeAttributeTags, classScopeAttributeTags));
         }
 
+        public void AddAsyncHookBindingIncludingLocking(string eventType, string name, string code = "", int? order = null, IList<string> hookTypeAttributeTags = null, IList<string> methodScopeAttributeTags = null,
+            IList<string> classScopeAttributeTags = null)
+        {
+            EnsureProjectExists();
+
+            var bindingsGenerator = _bindingsGeneratorFactory.FromLanguage(_project.ProgrammingLanguage);
+            _project.AddFile(bindingsGenerator.GenerateAsyncHookBindingIncludingLocking(eventType, name, code, order, hookTypeAttributeTags, methodScopeAttributeTags, classScopeAttributeTags));
+        }
+
         public void AddStepBinding(string bindingCode)
         {
             EnsureProjectExists();

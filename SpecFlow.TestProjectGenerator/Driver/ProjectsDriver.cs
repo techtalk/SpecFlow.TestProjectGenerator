@@ -69,6 +69,16 @@ namespace TechTalk.SpecFlow.TestProjectGenerator.Driver
             project.AddHookBinding(eventType, name, code, order, hookTypeAttributeTags, methodScopeAttributeTags, classScopeAttributeTags);
         }
 
+        public void AddAsyncHookBindingIncludingLocking(string eventType, string name, string code = "", int? order = null, IList<string> hookTypeAttributeTags = null, IList<string> methodScopeAttributeTags = null, IList<string> classScopeAttributeTags = null)
+        {
+            AddAsyncHookBindingIncludingLocking(_solutionDriver.DefaultProject, eventType, name, code, order, hookTypeAttributeTags, methodScopeAttributeTags, classScopeAttributeTags);
+        }
+
+        private void AddAsyncHookBindingIncludingLocking(ProjectBuilder project, string eventType, string name, string code = "", int? order = null, IList<string> hookTypeAttributeTags = null, IList<string> methodScopeAttributeTags = null,  IList<string> classScopeAttributeTags = null)
+        {
+            project.AddAsyncHookBindingIncludingLocking(eventType, name, code, order, hookTypeAttributeTags, methodScopeAttributeTags, classScopeAttributeTags);
+        }
+
         public void AddFeatureFile(string featureFileContent)
         {
             _solutionDriver.DefaultProject.AddFeatureFile(featureFileContent);
